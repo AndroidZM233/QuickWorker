@@ -26,7 +26,7 @@ public class Main2Activity extends Activity {
 
         try {
             serialPort = new SerialPort();
-            serialPort.OpenSerial("/dev/ttyUSB0", 9600);
+            serialPort.OpenSerial("/dev/ttyMT1", 9600);
         } catch (IOException e) {
             e.printStackTrace();
         }

@@ -10,7 +10,6 @@ import com.speedata.libutils.DataConversionUtils;
 import org.greenrobot.eventbus.EventBus;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 import speedata.com.quickworker.bean.DaoMaster;
 import speedata.com.quickworker.bean.DaoSession;
@@ -49,7 +48,7 @@ public class MyApp extends Application {
         setupDatabase();
         try {
             serialPort = new SerialPort();
-            serialPort.OpenSerial("/dev/ttyUSB0", 9600);
+            serialPort.OpenSerial("/dev/ttyMT1", 9600);
             readThread = new ReadThread();
             readThread.start();
         } catch (IOException e) {
@@ -94,9 +93,16 @@ public class MyApp extends Application {
                     if (resultBytes != null) {
                         EventBus.getDefault().post(new MsgEvent("weight",
                                 DataConversionUtils.byteArrayToAscii(resultBytes)));
+                    }else {
+                        EventBus.getDefault().post(new MsgEvent("weightFailed",""));
+                        serialPort.CloseSerial(serialPort.getFd());
+                        readThread.interrupt();
                     }
-                } catch (UnsupportedEncodingException e) {
+                } catch (Exception e) {
                     e.printStackTrace();
+                    EventBus.getDefault().post(new MsgEvent("weightFailed",""));
+                    serialPort.CloseSerial(serialPort.getFd());
+                    readThread.interrupt();
                 }
             }
         }

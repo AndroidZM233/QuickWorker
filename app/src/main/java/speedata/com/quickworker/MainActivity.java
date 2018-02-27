@@ -31,9 +31,10 @@ public class MainActivity extends Activity implements CommonRvAdapter.OnItemClic
     private RVAdapter mAdapter;
     private LinearLayoutManager layoutManager;
     private List<MyData> myDatas;
-    private TextView tv;
     private TextView tv_weight;
     private TextView tv_volume;
+    private volatile String oldWeight="0001.00";
+    private volatile int count=0;
 
 
     @Override
@@ -61,11 +62,27 @@ public class MainActivity extends Activity implements CommonRvAdapter.OnItemClic
         }else if (type.equals("weight")){
             StringBuffer stringBuffer = new StringBuffer((String) msg);
             String weight = stringBuffer.reverse().toString().replace("=", "");
+            if (!weight.equals("0000.00")){
+                if (oldWeight.equals(weight)){
+                    count++;
+                }else {
+                    count=0;
+                }
+                oldWeight=weight;
+            }
+            if (count>8){
+                tv_weight.setBackgroundColor(getResources().getColor(R.color.green));
+            }else {
+                tv_weight.setBackgroundColor(getResources().getColor(R.color.red));
+            }
             tv_weight.setText(weight);
         }else if (type.equals("update")){
             myDatas.clear();
             myDatas.addAll(MyApp.getDaoInstant().getMyDataDao().loadAll());
             mAdapter.notifyDataSetChanged();
+        }else if (type.equals("weightFailed")){
+            tv_weight.setBackgroundColor(getResources().getColor(R.color.red));
+            tv_weight.setText("称连接断开");
         }
     }
 
@@ -73,7 +90,6 @@ public class MainActivity extends Activity implements CommonRvAdapter.OnItemClic
         et_barcode = (EditText) findViewById(R.id.et_barcode);
         rv_content = (RecyclerView) findViewById(R.id.rv_content);
         et_barcode.addTextChangedListener(new EditChangedListener());
-        tv = (TextView) findViewById(R.id.tv);
         tv_weight = (TextView) findViewById(R.id.tv_weight);
         tv_volume = (TextView) findViewById(R.id.tv_volume);
     }
